@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = ".;grpc_demo";
+
+message req {
+  uint32 GRPCCode = 1;
+  uint32 BizErrorCode = 2;
+}
+
+message resp {}
+
+service Demo {
+  rpc DoDemo(req) returns (resp);
+}
