@@ -11,6 +11,7 @@ require (
 	github.com/zhwei820/gconv v0.0.0-20220317121157-3c0d4e7dc487 // indirect
 	golang.org/x/text v0.3.7
 	google.golang.org/grpc v1.41.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0 // indirect
 	google.golang.org/protobuf v1.27.1
 	gorm.io/gorm v1.21.15
 )

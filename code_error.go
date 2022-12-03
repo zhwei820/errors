@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // wrap is a helper to construct an *wrapper.
@@ -51,21 +50,6 @@ func NewCodeErrorf(code codes.Code, httpCode, bizCode uint32, format string, arg
 	return &CodeError{Err: wrap(nil, format, "", args...), Code: code, HTTPCode: httpCode, BizCode: bizCode}
 }
 
-// NewHTTPErrorf new http errorf
-func NewHTTPErrorf(httpCode, bizCode uint32, format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, "", args...), HTTPCode: httpCode, BizCode: bizCode}
-}
-
-// NewGRPCError new code error
-func NewGRPCError(code codes.Code, err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: code}
-}
-
-// NewHTTPError new code error
-func NewHTTPError(httpCode, bizCode uint32, err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), HTTPCode: httpCode, BizCode: bizCode}
-}
-
 // NotValidf returns an error which satisfies IsNotValid().
 func NotValidf(format string, args ...interface{}) error {
 	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusBadRequest), args...), Code: codes.InvalidArgument, HTTPCode: http.StatusBadRequest, BizCode: 12000003}
@@ -81,24 +65,6 @@ func IsNotValid(err error) bool {
 	err = Cause(err)
 	if innerErr, ok := err.(*CodeError); ok {
 		return innerErr.Code == codes.InvalidArgument
-	}
-	return false
-}
-
-// Timeoutf returns an error which satisfies IsTimeout().
-func Timeoutf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusRequestTimeout), args...), Code: codes.DeadlineExceeded, HTTPCode: http.StatusRequestTimeout, BizCode: 12000004}
-}
-
-// NewTimeout returns an error which wraps err that satisfies
-func NewTimeout(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.DeadlineExceeded, HTTPCode: http.StatusRequestTimeout, BizCode: 12000004}
-}
-
-func IsTimeout(err error) bool {
-	err = Cause(err)
-	if innerErr, ok := err.(*CodeError); ok {
-		return innerErr.Code == codes.DeadlineExceeded
 	}
 	return false
 }
@@ -160,25 +126,6 @@ func IsForbidden(err error) bool {
 	return false
 }
 
-// ResourceExhaustedf returns an error which satisfaction IsResourceExhausted()
-func ResourceExhaustedf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusGone), args...), Code: codes.ResourceExhausted, HTTPCode: http.StatusGone, BizCode: 12000008}
-}
-
-// NewResourceExhausted returns an error which wraps err that satisfies
-func NewResourceExhausted(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.ResourceExhausted, HTTPCode: http.StatusGone, BizCode: 12000008}
-}
-
-// IsResourceExhausted is resource exhausted error
-func IsResourceExhausted(err error) bool {
-	err = Cause(err)
-	if innerErr, ok := err.(*CodeError); ok {
-		return innerErr.Code == codes.ResourceExhausted
-	}
-	return false
-}
-
 // FailedPreconditionf returns an error which satisfaction IsFailedPrecondition()
 func FailedPreconditionf(format string, args ...interface{}) error {
 	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusPreconditionFailed), args...), Code: codes.FailedPrecondition, HTTPCode: http.StatusPreconditionFailed, BizCode: 12000009}
@@ -236,21 +183,21 @@ func IsNotImplemented(err error) bool {
 	return false
 }
 
-// Intervalf returns an error which internal server error
-func Intervalf(format string, args ...interface{}) error {
+// Internalf returns an error which internal server error
+func Internalf(format string, args ...interface{}) error {
 	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusInternalServerError), args...), Code: codes.Internal, HTTPCode: http.StatusInternalServerError, BizCode: 12000013}
 }
 
-// NewInterval == NewInternal return an error which internal server error
-func NewInterval(err error, msg string) error {
+// NewInternal == NewInternal return an error which internal server error
+func NewInternal(err error, msg string) error {
 	if IsBizCodeError(err, MysqlErrorBizCode) { // 对于mysql error, bizcode需要设置为 MysqlErrorBizCode
 		return &CodeError{Err: wrap(err, msg, ""), Code: codes.Internal, HTTPCode: http.StatusInternalServerError, BizCode: MysqlErrorBizCode}
 	}
 	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Internal, HTTPCode: http.StatusInternalServerError, BizCode: 12000013}
 }
 
-// IsInterval is internal error
-func IsInterval(err error) bool {
+// IsInternal is internal error
+func IsInternal(err error) bool {
 	err = Cause(err)
 	if innerErr, ok := err.(*CodeError); ok {
 		return innerErr.Code == codes.Internal
@@ -268,7 +215,7 @@ func NewUnavailable(err error, msg string) error {
 	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Unavailable, HTTPCode: http.StatusServiceUnavailable, BizCode: 12000014}
 }
 
-// IsUnavailable is unavaliable error
+// IsUnavailable is unavailable error
 func IsUnavailable(err error) bool {
 	err = Cause(err)
 	if innerErr, ok := err.(*CodeError); ok {
@@ -294,53 +241,6 @@ func IsUnauthorized(err error) bool {
 		return innerErr.Code == codes.Unauthenticated
 	}
 	return false
-}
-
-// ToGRPCStatus to grpc status error
-func ToGRPCStatus(err error) *status.Status {
-	err = Cause(err)
-	if err == nil {
-		return nil
-	}
-	inner, ok := err.(*CodeError)
-	if ok {
-		if inner.Code == codes.OK && inner.BizCode != 0 {
-			inner.Code = codes.Unknown
-		}
-		st := status.New(inner.Code, err.Error())
-		if inner.BizCode != 0 {
-			st, _ = st.WithDetails(&BizErrorCode{Code: inner.BizCode})
-		}
-		return st
-	}
-	st, _ := status.FromError(err)
-	return st
-}
-
-// ToGRPCReturnError generate grpc api return error
-func ToGRPCReturnError(err error) error {
-	st := ToGRPCStatus(err)
-	if st == nil {
-		return nil
-	}
-	return st.Err()
-}
-
-// GRPCErrToError grpc error to code error
-func GRPCErrToError(err error) error {
-	if err == nil {
-		return nil
-	}
-	st, _ := status.FromError(err)
-	httpCode := grpcCodeToHttpCode[st.Code()]
-	codeErr := &CodeError{Err: wrap(nil, err.Error(), ""), Code: st.Code(), HTTPCode: httpCode}
-	details := st.Details()
-	for _, detail := range details {
-		if bizErrorCode, ok := detail.(*BizErrorCode); ok {
-			codeErr.BizCode = bizErrorCode.Code
-		}
-	}
-	return codeErr
 }
 
 // NewBizCodeError new biz code error with biz code and translated message

@@ -24,11 +24,23 @@ func ResponseErr(g *gin.Context, err error) {
 	}
 }
 
-// ResponseBad response error, if err is not code error type, default return http.StatusBadRequest
-func ResponseBad(g *gin.Context, err error) {
-	if !responseByErr(g, err) {
-		Response(g, http.StatusBadRequest, OkBizCode, nil, err.Error())
+func responseByErr(g *gin.Context, err error) bool {
+	if err == nil {
+		Response(g, http.StatusOK, OkBizCode, nil, "")
+		return true
 	}
+	message := err.Error()
+	err = Cause(err)
+	if inner, ok := err.(*CodeError); ok {
+		errCode := inner.HTTPCode
+		// if custom biz code, should be used
+		if inner.BizCode != OkBizCode {
+			errCode = inner.BizCode
+		}
+		Response(g, inner.HTTPCode, errCode, nil, message)
+		return true
+	}
+	return false
 }
 
 // ResponseOk response ok
@@ -54,28 +66,9 @@ func Response(g *gin.Context, httpCode, errCode uint32, data interface{}, messag
 	})
 }
 
-func responseByErr(g *gin.Context, err error) bool {
-	if err == nil {
-		Response(g, http.StatusOK, OkBizCode, nil, "")
-		return true
-	}
-	message := err.Error()
-	err = Cause(err)
-	if inner, ok := err.(*CodeError); ok {
-		errCode := inner.HTTPCode
-		// if custom biz code, should be used
-		if inner.BizCode != OkBizCode {
-			errCode = inner.BizCode
-		}
-		Response(g, inner.HTTPCode, errCode, nil, message)
-		return true
-	}
-	return false
-}
-
 func getTranslateMsg(g *gin.Context, bizCode uint32) string {
 	bizCodeStr := strconv.FormatInt(int64(bizCode), 10)
-	translated := translateWithLanHeader(g.GetHeader("LANGUAGE-TYPE"), bizCodeStr)
+	translated := TranslateWithConvertLan(g.GetHeader("LANGUAGE-TYPE"), bizCodeStr)
 	if translated == bizCodeStr {
 		return ""
 	}

@@ -1,5 +1,5 @@
 // Copyright 2014 Canonical Ltd.
-// Licensed under the LGPLv3, see LICENCE file for details.
+// Licensed under the LGPLv3, see LICENSE file for details.
 
 package errors
 
@@ -29,50 +29,6 @@ type Err struct {
 	// created.
 	file string
 	line int
-}
-
-// NewErr is used to return an Err for the purpose of embedding in other
-// structures.  The location is not specified, and needs to be set with a call
-// to SetLocation.
-//
-// For example:
-//     type FooError struct {
-//         errors.Err
-//         code int
-//     }
-//
-//     func NewFooError(code int) error {
-//         err := &FooError{errors.NewErr("foo"), code}
-//         err.SetLocation(1)
-//         return err
-//     }
-func NewErr(format string, args ...interface{}) Err {
-	return Err{
-		message: fmt.Sprintf(format, args...),
-	}
-}
-
-// NewErrWithCause is used to return an Err with cause by other error for the purpose of embedding in other
-// structures. The location is not specified, and needs to be set with a call
-// to SetLocation.
-//
-// For example:
-//     type FooError struct {
-//         errors.Err
-//         code int
-//     }
-//
-//     func (e *FooError) Annotate(format string, args ...interface{}) error {
-//         err := &FooError{errors.NewErrWithCause(e.Err, format, args...), e.code}
-//         err.SetLocation(1)
-//         return err
-//     })
-func NewErrWithCause(other error, format string, args ...interface{}) Err {
-	return Err{
-		message:  fmt.Sprintf(format, args...),
-		cause:    Cause(other),
-		previous: other,
-	}
 }
 
 // Location is the file and line of where the error was most recently
@@ -182,5 +138,6 @@ func (e *Err) StackTrace() []string {
 
 // Ideally we'd have a way to check identity, but deep equals will do.
 func sameError(e1, e2 error) bool {
+	//nolint
 	return reflect.DeepEqual(e1, e2)
 }

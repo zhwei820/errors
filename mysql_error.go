@@ -40,26 +40,26 @@ func V2MysqlErr(err error) error {
 
 func init() {
 	strMysqlErrorBizCode := strconv.Itoa(int(MysqlErrorBizCode))
-	RegisterTranslate([]TransInfo{
+	RegisterI18n([]TransInfo{
 		{
-			Tag: EnUs,
-			Key: strMysqlErrorBizCode,
-			Msg: "network error",
+			Lang: EnUs,
+			Key:  strMysqlErrorBizCode,
+			Msg:  "network error",
 		},
 		{
-			Tag: ZhCn,
-			Key: strMysqlErrorBizCode,
-			Msg: "网络错误",
+			Lang: ZhCn,
+			Key:  strMysqlErrorBizCode,
+			Msg:  "网络错误",
 		},
 		{
-			Tag: ZhTW,
-			Key: strMysqlErrorBizCode,
-			Msg: "網絡錯誤",
+			Lang: ZhTW,
+			Key:  strMysqlErrorBizCode,
+			Msg:  "網絡錯誤",
 		},
 		{
-			Tag: RuRu,
-			Key: strMysqlErrorBizCode,
-			Msg: "network error",
+			Lang: RuRu,
+			Key:  strMysqlErrorBizCode,
+			Msg:  "network error",
 		},
 	})
 }

@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
+
 	"github.com/zhwei820/errors"
 	"github.com/zhwei820/errors/grpc_demo"
 	"google.golang.org/grpc"
-	"net"
 )
 
 var bizErrorCode uint32 = 10086
@@ -22,11 +23,9 @@ type Demo struct {
 }
 
 func (d Demo) DoDemo(ctx context.Context, req *grpc_demo.Req) (*grpc_demo.Resp, error) {
-	// 将error封装成codeError后返回；
 	return nil, errors.ToGRPCReturnError(errors.NewBizCodeErrorf(bizErrorCode, "this is biz code error example"))
 }
 
-// 运行一个grpc服务器
 func grpcServer() *grpc.Server {
 	lis, err := net.Listen("tcp", ":8000")
 	if err != nil {
