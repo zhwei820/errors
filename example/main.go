@@ -6,7 +6,7 @@ import (
 	"net"
 
 	"github.com/zhwei820/errors"
-	"github.com/zhwei820/errors/grpc_demo"
+	"github.com/zhwei820/errors/example/grpc_demo"
 	"google.golang.org/grpc"
 )
 
