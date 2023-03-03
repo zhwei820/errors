@@ -23,13 +23,7 @@ type Demo struct {
 }
 
 func (d Demo) DoDemo(ctx context.Context, req *grpc_demo.Req) (*grpc_demo.Resp, error) {
-<<<<<<< HEAD:example/grpc_error/main.go
-	// 将error封装成codeError后返回；
-	// return nil, errors.ToGRPCReturnError(errors.NewBizCodeErrorf(bizErrorCode, "this is biz code error example"))
-	return nil, errors.ToGRPCReturnError(errors.Annotate(errors.AlreadyExistsf(""), "AlreadyExistsf"))
-=======
 	return nil, errors.ToGRPCReturnError(errors.NewBizCodeErrorf(bizErrorCode, "this is biz code error example"))
->>>>>>> 41d205e8d19b342c286ee6c0e4483ed4da0deb39:example/main.go
 }
 
 func grpcServer() *grpc.Server {
