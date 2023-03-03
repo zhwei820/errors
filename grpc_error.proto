@@ -2,7 +2,6 @@ syntax = "proto3";
 
 option go_package = ".;errors";
 
-// BizErrorCode 业务错误码
 message BizErrorCode {
   uint32 code = 1;
 }

@@ -1,123 +1,77 @@
 package errors
 
 import (
-	"fmt"
 	"strings"
-
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
+
+type LangType string
 
 const (
-	// ZhCn zh-CN, language type Chinese
-	ZhCn = "zh-CN"
-	// EnUs en-US, language type English
-	EnUs = "en-US"
-	// RuRu ru-RU  language type Russian
-	RuRu = "ru-RU"
-	// ZhTW zh-TW language type traditional chinese
-	ZhTW = "zh-TW"
-	// JaJP language type JaJP
-	JaJP = "ja-JP"
-	// KoKR language type Korean
-	KoKR = "ko-KR"
-	// ESES  language type Spain
-	ESES = "es-ES"
-	// DEDE language type Germany
-	DEDE = "de-DE"
+	ZhCn LangType = "zh-CN"
+	EnUs LangType = "en-US"
+	RuRu LangType = "ru-RU"
+	ZhTW LangType = "zh-TW"
+	JaJP LangType = "ja-JP"
+	KoKR LangType = "ko-KR"
+	ESES LangType = "es-ES"
+	DEDE LangType = "de-DE"
 )
 
-var _PrinterStore map[string]*message.Printer
-
-func getPrinter(lanSpec string) *message.Printer {
-	printer, ok := _PrinterStore[lanSpec]
-	if ok {
-		return printer
-	}
-	tag, _, _ := matcher.Match(language.MustParse(lanSpec))
-	return message.NewPrinter(tag)
+func (l LangType) String() string {
+	return string(l)
 }
-
-func init() {
-	matcher = language.NewMatcher(message.DefaultCatalog.Languages())
-	_PrinterStore = make(map[string]*message.Printer)
-}
-
-var matcher language.Matcher
 
 // TransInfo used to pack translate messages
 type TransInfo struct {
-	Tag string      // 语言
-	Key string      // 翻译key 可以是biz code
-	Msg interface{} // 翻译后的内容
+	Lang LangType //
+	Key  string   //
+	Msg  string   //
 }
 
-// RegisterTranslate 各业务注册 自定义码以及翻译内容
-func RegisterTranslate(messages []TransInfo) {
+var messageMap = map[string]map[LangType]TransInfo{}
+
+func RegisterI18n(messages []TransInfo) {
+	messageMap = map[string]map[LangType]TransInfo{}
 	for _, msg := range messages {
-		tag := language.MustParse(ConvertLanHeader(msg.Tag))
-		switch m := msg.Msg.(type) {
-		case string:
-			if err := message.SetString(tag, msg.Key, m); err != nil {
-				fmt.Printf("error occurred, set translate failed, Tag is %v, Key is %s \n", tag, msg.Key)
-			}
+		lang := ConvertLang(msg.Lang.String())
+		if msgMap, ok := messageMap[msg.Key]; ok {
+			msgMap[lang] = msg
+		} else {
+			messageMap[msg.Key] = map[LangType]TransInfo{lang: msg}
 		}
 	}
-	matcher = language.NewMatcher(message.DefaultCatalog.Languages())
-	refreshPrinterStore()
 }
 
-// RegisterOne 各业务注册 自定义码以及翻译内容
-func RegisterOne(msg TransInfo) {
-	tag := language.MustParse(ConvertLanHeader(msg.Tag))
-	switch m := msg.Msg.(type) {
-	case string:
-		if err := message.SetString(tag, msg.Key, m); err != nil {
-			fmt.Printf("error occurred, set translate failed, Tag is %v, Key is %s \n", tag, msg.Key)
-		}
+func Translate(langSpec LangType, key string) string {
+	res, ok := messageMap[key]
+	if !ok {
+		return "msg not found: " + key
 	}
-	matcher = language.NewMatcher(message.DefaultCatalog.Languages())
-	refreshPrinterStore()
+	ret, ok := res[langSpec]
+	if !ok {
+		return "msg not found: " + key + " ," + langSpec.String()
+	}
+	return ret.Msg
 }
 
-// translateWithLanHeader 根据请求头部的语言信息翻译文本，需预先在messages中设定翻译内容
-func translateWithLanHeader(lanHeader, key string, args ...interface{}) string {
-	return getPrinter(ConvertLanHeader(lanHeader)).Sprintf(key, args...)
+func TranslateWithConvertLan(langRaw, key string) string {
+	langSpec := ConvertLang(langRaw)
+	return Translate(langSpec, key)
 }
 
-// Translate 按语言翻译，需预先在messages中设定翻译内容
-func Translate(lanSpec, key string, args ...interface{}) string {
-	return getPrinter(lanSpec).Sprintf(key, args...)
-}
-
-// TranslateWithConvertLan 按语言翻译，需预先在messages中设定翻译内容
-func TranslateWithConvertLan(lanSpec, key string, args ...interface{}) string {
-	return getPrinter(ConvertLanHeader(lanSpec)).Sprintf(key, args...)
-}
-
-// ConvertLanHeader 根据请求头中的LANGUAGE-TYPE获取一个标准的语言标识
-func ConvertLanHeader(lan string) (lanSpec string) {
-	lan = strings.Replace(lan, "_", "-", -1)
-	switch lan {
-	case "0", "zh-CN", "zh", "ZH", "cn", "CN", "zh_CN":
-		lanSpec = ZhCn
-	case "1", "en-US", "en", "EN", "us", "US", "en_US":
-		lanSpec = EnUs
-	case "2", "ru-RU", "ru", "RU", "ru_RU":
-		lanSpec = RuRu
-	case "5", ZhTW:
-		lanSpec = ZhTW
-	case JaJP, KoKR, ESES, DEDE:
-		lanSpec = lan
+func ConvertLang(lang string) (langSpec LangType) {
+	lang = strings.ReplaceAll(lang, "_", "-")
+	switch lang {
+	case "zh", "ZH", "cn", "CN", "zh_CN", ZhCn.String():
+		langSpec = ZhCn
+	case "en", "EN", "us", "US", "en_US", EnUs.String():
+		langSpec = EnUs
+	case "ru", "RU", "ru_RU", RuRu.String():
+		langSpec = RuRu
+	case JaJP.String(), KoKR.String(), ESES.String(), DEDE.String(), ZhTW.String():
+		langSpec = LangType(lang)
 	default:
-		lanSpec = EnUs
+		langSpec = EnUs
 	}
-	return lanSpec
-}
-
-func refreshPrinterStore() {
-	for _, lan := range []string{ZhCn, EnUs, RuRu, ZhTW, JaJP, KoKR, ESES, DEDE} {
-		tag, _, _ := matcher.Match(language.MustParse(lan))
-		_PrinterStore[lan] = message.NewPrinter(tag)
-	}
+	return langSpec
 }
