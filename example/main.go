@@ -6,7 +6,7 @@ import (
 	"net"
 
 	"gitee.com/spwx/errors"
-	"gitee.com/spwx/errors/grpc_demo"
+	"gitee.com/spwx/errors/example/grpc_demo"
 	"google.golang.org/grpc"
 )
 
