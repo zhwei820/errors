@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/gin-gonic/gin"
 )
 
 type JSONResult struct {
-	Code    int64       `json:"code"` // common code please see https://gitlab.matrixport.com/loan/document/-/blob/master/error/error_code.md
+	Code    uint32      `json:"code"` // common code please see https://gitlab.matrixport.com/loan/document/-/blob/master/error/error_code.md
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
@@ -54,9 +53,9 @@ func HzResponse(g *app.RequestContext, httpCode, errCode uint32, data interface{
 	if translatedMsg != "" {
 		message = translatedMsg
 	}
-	g.JSON(int(httpCode), gin.H{
-		"code":    errCode,
-		"message": message,
-		"data":    data,
+	g.JSON(int(httpCode), JSONResult{
+		Code:    errCode,
+		Message: message,
+		Data:    data,
 	})
 }
