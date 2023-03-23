@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/bytedance/sonic v1.8.3 // indirect
+	github.com/cloudwego/hertz v0.6.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect

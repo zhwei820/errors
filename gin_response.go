@@ -44,13 +44,12 @@ func responseByErr(g *gin.Context, err error) bool {
 }
 
 // ResponseOk response ok
-func ResponseOk(g *gin.Context, data interface{}) {
-	Response(g, http.StatusOK, OkBizCode, data, "")
-}
-
-// ResponseOkWithMsg response ok with custom message
-func ResponseOkWithMsg(g *gin.Context, data interface{}, msg string) {
-	Response(g, http.StatusOK, OkBizCode, data, msg)
+func ResponseOk(g *gin.Context, data interface{}, msg ...string) {
+	var s = ""
+	if len(msg) > 0 {
+		s = msg[0]
+	}
+	Response(g, http.StatusOK, OkBizCode, data, s)
 }
 
 // Response response json, if the above api doesn't satisfy your demands, should be used
@@ -69,6 +68,15 @@ func Response(g *gin.Context, httpCode, errCode uint32, data interface{}, messag
 func getTranslateMsg(g *gin.Context, bizCode uint32) string {
 	bizCodeStr := strconv.FormatInt(int64(bizCode), 10)
 	translated := TranslateWithConvertLan(g.GetHeader("LANGUAGE-TYPE"), bizCodeStr)
+	if translated == bizCodeStr {
+		return ""
+	}
+	return translated
+}
+
+func getTranslateMsgByLang(lang string, bizCode uint32) string {
+	bizCodeStr := strconv.FormatInt(int64(bizCode), 10)
+	translated := TranslateWithConvertLan(lang, bizCodeStr)
 	if translated == bizCodeStr {
 		return ""
 	}
