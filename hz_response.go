@@ -7,6 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type JSONResult struct {
+	Code    int64       `json:"code"` // common code please see https://gitlab.matrixport.com/loan/document/-/blob/master/error/error_code.md
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
 // ResponseErr response error, if err is not code error type, default return http.StatusInternalServerError
 func HzResponseErr(g *app.RequestContext, err error) {
 	if !hzResponseByErr(g, err) {
