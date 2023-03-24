@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net"
 
-	"gitee.com/spwx/errors"
-	"gitee.com/spwx/errors/example/grpc_demo"
+	"github.com/zhwei820/errors"
+	"github.com/zhwei820/errors/example/grpc_demo"
 	"google.golang.org/grpc"
 )
 
