@@ -29,7 +29,7 @@ type TransInfo struct {
 	Msg  string   //
 }
 
-var messageMap = map[string]map[LangType]TransInfo{}
+var messageMap map[string]map[LangType]TransInfo
 
 func init() {
 	messageMap = map[string]map[LangType]TransInfo{}
@@ -49,6 +49,8 @@ func RegisterI18n(messages []TransInfo) {
 func Translate(langSpec LangType, key string) string {
 	res, ok := messageMap[key]
 	if !ok {
+		fmt.Println(fmt.Sprintf("messageMap: %v", messageMap))
+		fmt.Println(fmt.Sprintf("messageMap[key]: %v", messageMap[key]))
 		return "msg not found: " + key
 	}
 	ret, ok := res[langSpec]
