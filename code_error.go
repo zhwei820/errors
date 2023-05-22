@@ -3,9 +3,136 @@ package errors
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"google.golang.org/grpc/codes"
 )
+
+type ErrCode uint32
+
+const (
+	ErrCodeBadRequest          ErrCode = 12000003
+	ErrCodeNotFound            ErrCode = 12000005
+	ErrCodeConflict            ErrCode = 12000006
+	ErrCodeForbidden           ErrCode = 12000007 // 403
+	ErrCodePreconditionFailed  ErrCode = 12000009
+	ErrCodeNotImplemented      ErrCode = 12000012
+	ErrCodeInternalServerError ErrCode = 12000013
+	ErrCodeServiceUnavailable  ErrCode = 12000014
+	ErrCodeUnauthorized        ErrCode = 12000016 // 401
+)
+
+func (c ErrCode) String() string {
+	return strconv.Itoa(int(c))
+}
+func (c ErrCode) Int() uint32 {
+	return uint32(c)
+}
+
+func init() {
+	RegisterI18n([]TransInfo{
+		{
+			Lang: EnUs,
+			Key:  ErrCodeBadRequest.String(),
+			Msg:  "parameter error",
+		},
+		{
+			Lang: ZhCn,
+			Key:  ErrCodeBadRequest.String(),
+			Msg:  "参数错误",
+		},
+		// =================================================================
+		{
+			Lang: EnUs,
+			Key:  ErrCodeNotFound.String(),
+			Msg:  "record not found",
+		},
+		{
+			Lang: ZhCn,
+			Key:  ErrCodeNotFound.String(),
+			Msg:  "未找到",
+		},
+		// =================================================================
+		{
+			Lang: EnUs,
+			Key:  ErrCodeConflict.String(),
+			Msg:  "内部错误",
+		},
+		{
+			Lang: ZhCn,
+			Key:  ErrCodeConflict.String(),
+			Msg:  "内部错误",
+		},
+		// =================================================================
+		{
+			Lang: EnUs,
+			Key:  ErrCodeForbidden.String(),
+			Msg:  "forbidden",
+		},
+		{
+			Lang: ZhCn,
+			Key:  ErrCodeForbidden.String(),
+			Msg:  "没有权限,禁止访问",
+		},
+		// =================================================================
+		{
+			Lang: EnUs,
+			Key:  ErrCodePreconditionFailed.String(),
+			Msg:  "precondition error",
+		},
+		{
+			Lang: ZhCn,
+			Key:  ErrCodePreconditionFailed.String(),
+			Msg:  "前置条件错误",
+		},
+		// =================================================================
+		{
+			Lang: EnUs,
+			Key:  ErrCodeNotImplemented.String(),
+			Msg:  "not implemented",
+		},
+		{
+			Lang: ZhCn,
+			Key:  ErrCodeNotImplemented.String(),
+			Msg:  "未实现",
+		},
+		// =================================================================
+		{
+			Lang: EnUs,
+			Key:  ErrCodeInternalServerError.String(),
+			Msg:  "internal server error",
+		},
+		{
+			Lang: ZhCn,
+			Key:  ErrCodeInternalServerError.String(),
+			Msg:  "内部错误,请稍后重试,或者联系管理员",
+		},
+		// =================================================================
+		{
+			Lang: EnUs,
+			Key:  ErrCodeServiceUnavailable.String(),
+			Msg:  "service unavailable",
+		},
+		{
+			Lang: ZhCn,
+			Key:  ErrCodeServiceUnavailable.String(),
+			Msg:  "服务不可用",
+		},
+		// =================================================================
+		{
+			Lang: EnUs,
+			Key:  ErrCodeUnauthorized.String(),
+			Msg:  "Unauthorized",
+		},
+		{
+			Lang: ZhCn,
+			Key:  ErrCodeUnauthorized.String(),
+			Msg:  "未登录",
+		},
+	})
+}
+
+// =================================================================
 
 // wrap is a helper to construct an *wrapper.
 func wrap(err error, format, suffix string, args ...interface{}) Err {
@@ -52,12 +179,12 @@ func NewCodeErrorf(code codes.Code, httpCode, bizCode uint32, format string, arg
 
 // NotValidf returns an error which satisfies IsNotValid().
 func NotValidf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusBadRequest), args...), Code: codes.InvalidArgument, HTTPCode: http.StatusBadRequest, BizCode: 12000003}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusBadRequest), args...), Code: codes.InvalidArgument, HTTPCode: http.StatusBadRequest, BizCode: ErrCodeBadRequest.Int()}
 }
 
 // NewNotValid returns an error which wraps err and satisfies IsNotValid().
 func NewNotValid(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.InvalidArgument, HTTPCode: http.StatusBadRequest, BizCode: 12000003}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.InvalidArgument, HTTPCode: http.StatusBadRequest, BizCode: ErrCodeBadRequest.Int()}
 }
 
 // IsNotValid is not valid error
@@ -71,12 +198,12 @@ func IsNotValid(err error) bool {
 
 // NotFoundf returns an error which satisfies IsNotFound().
 func NotFoundf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusNotFound), args...), Code: codes.NotFound, HTTPCode: http.StatusNotFound, BizCode: 12000005}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusNotFound), args...), Code: codes.NotFound, HTTPCode: http.StatusNotFound, BizCode: ErrCodeBadRequest.Int()}
 }
 
 // NewNotFound returns an error which wraps err that satisfies
 func NewNotFound(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.NotFound, HTTPCode: http.StatusNotFound, BizCode: 12000005}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.NotFound, HTTPCode: http.StatusNotFound, BizCode: ErrCodeBadRequest.Int()}
 }
 
 // IsNotFound is not Fund
@@ -90,12 +217,12 @@ func IsNotFound(err error) bool {
 
 // AlreadyExistsf returns an error which satisfies
 func AlreadyExistsf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusConflict), args...), Code: codes.AlreadyExists, HTTPCode: http.StatusConflict, BizCode: 12000006}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusConflict), args...), Code: codes.AlreadyExists, HTTPCode: http.StatusConflict, BizCode: ErrCodeConflict.Int()}
 }
 
 // NewAlreadyExists returns an error which wraps err and satisfies
 func NewAlreadyExists(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.AlreadyExists, HTTPCode: http.StatusConflict, BizCode: 12000006}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.AlreadyExists, HTTPCode: http.StatusConflict, BizCode: ErrCodeConflict.Int()}
 }
 
 // IsAlreadyExists is already exists
@@ -109,12 +236,12 @@ func IsAlreadyExists(err error) bool {
 
 // Forbiddenf returns an error which satistifes IsForbidden()
 func Forbiddenf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusForbidden), args...), Code: codes.PermissionDenied, HTTPCode: http.StatusForbidden, BizCode: 12000007}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusForbidden), args...), Code: codes.PermissionDenied, HTTPCode: http.StatusForbidden, BizCode: ErrCodeForbidden.Int()}
 }
 
 // NewForbidden returns an error which wraps err that satisfies
 func NewForbidden(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.PermissionDenied, HTTPCode: http.StatusForbidden, BizCode: 12000007}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.PermissionDenied, HTTPCode: http.StatusForbidden, BizCode: ErrCodeForbidden.Int()}
 }
 
 // IsForbidden is forbidden error
@@ -128,12 +255,12 @@ func IsForbidden(err error) bool {
 
 // FailedPreconditionf returns an error which satisfaction IsFailedPrecondition()
 func FailedPreconditionf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusPreconditionFailed), args...), Code: codes.FailedPrecondition, HTTPCode: http.StatusPreconditionFailed, BizCode: 12000009}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusPreconditionFailed), args...), Code: codes.FailedPrecondition, HTTPCode: http.StatusPreconditionFailed, BizCode: ErrCodePreconditionFailed.Int()}
 }
 
 // NewFailedPrecondition returns an error which wraps err that satisfies
 func NewFailedPrecondition(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.FailedPrecondition, HTTPCode: http.StatusPreconditionFailed, BizCode: 12000009}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.FailedPrecondition, HTTPCode: http.StatusPreconditionFailed, BizCode: ErrCodePreconditionFailed.Int()}
 }
 
 // IsFailedPrecondition is failed precondition errors
@@ -147,12 +274,12 @@ func IsFailedPrecondition(err error) bool {
 
 // Abortedf returns an error which satisfaction IsAborted()
 func Abortedf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusInternalServerError), args...), Code: codes.Aborted, HTTPCode: http.StatusInternalServerError, BizCode: 12000010}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusInternalServerError), args...), Code: codes.Aborted, HTTPCode: http.StatusInternalServerError, BizCode: ErrCodeInternalServerError.Int()}
 }
 
 // NewAborted returns an error which wraps err that satisfies
 func NewAborted(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Aborted, HTTPCode: http.StatusInternalServerError, BizCode: 12000010}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Aborted, HTTPCode: http.StatusInternalServerError, BizCode: ErrCodeInternalServerError.Int()}
 }
 
 // IsAborted is aborted error
@@ -166,12 +293,12 @@ func IsAborted(err error) bool {
 
 // NotImplementedf returns an error which satisfies IsNotImplemented().
 func NotImplementedf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusNotImplemented), args...), Code: codes.Unimplemented, HTTPCode: http.StatusNotImplemented, BizCode: 12000012}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusNotImplemented), args...), Code: codes.Unimplemented, HTTPCode: http.StatusNotImplemented, BizCode: ErrCodeNotImplemented.Int()}
 }
 
 // NewNotImplemented returns an error which wraps err and satisfies
 func NewNotImplemented(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Unimplemented, HTTPCode: http.StatusNotImplemented, BizCode: 12000012}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Unimplemented, HTTPCode: http.StatusNotImplemented, BizCode: ErrCodeNotImplemented.Int()}
 }
 
 // IsNotImplemented is not implemented
@@ -185,7 +312,7 @@ func IsNotImplemented(err error) bool {
 
 // Internalf returns an error which internal server error
 func Internalf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusInternalServerError), args...), Code: codes.Internal, HTTPCode: http.StatusInternalServerError, BizCode: 12000013}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusInternalServerError), args...), Code: codes.Internal, HTTPCode: http.StatusInternalServerError, BizCode: ErrCodeInternalServerError.Int()}
 }
 
 // NewInternal == NewInternal return an error which internal server error
@@ -193,7 +320,7 @@ func NewInternal(err error, msg string) error {
 	if IsBizCodeError(err, MysqlErrorBizCode) { // 对于mysql error, bizcode需要设置为 MysqlErrorBizCode
 		return &CodeError{Err: wrap(err, msg, ""), Code: codes.Internal, HTTPCode: http.StatusInternalServerError, BizCode: MysqlErrorBizCode}
 	}
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Internal, HTTPCode: http.StatusInternalServerError, BizCode: 12000013}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Internal, HTTPCode: http.StatusInternalServerError, BizCode: ErrCodeInternalServerError.Int()}
 }
 
 // IsInternal is internal error
@@ -207,12 +334,12 @@ func IsInternal(err error) bool {
 
 // Unavailablef returns an error which server unavailable
 func Unavailablef(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusServiceUnavailable), args...), Code: codes.Unavailable, HTTPCode: http.StatusServiceUnavailable, BizCode: 12000014}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusServiceUnavailable), args...), Code: codes.Unavailable, HTTPCode: http.StatusServiceUnavailable, BizCode: ErrCodeServiceUnavailable.Int()}
 }
 
 // NewUnavailable returns an error which server unavailable
 func NewUnavailable(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Unavailable, HTTPCode: http.StatusServiceUnavailable, BizCode: 12000014}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Unavailable, HTTPCode: http.StatusServiceUnavailable, BizCode: ErrCodeServiceUnavailable.Int()}
 }
 
 // IsUnavailable is unavailable error
@@ -226,12 +353,12 @@ func IsUnavailable(err error) bool {
 
 // Unauthorizedf returns an error which satisfies IsUnauthorized().
 func Unauthorizedf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusUnauthorized), args...), Code: codes.Unauthenticated, HTTPCode: http.StatusUnauthorized, BizCode: 12000016}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusUnauthorized), args...), Code: codes.Unauthenticated, HTTPCode: http.StatusUnauthorized, BizCode: ErrCodeUnauthorized.Int()}
 }
 
 // NewUnauthorized returns an error which wraps err and satisfies
 func NewUnauthorized(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Unauthenticated, HTTPCode: http.StatusUnauthorized, BizCode: 12000016}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.Unauthenticated, HTTPCode: http.StatusUnauthorized, BizCode: ErrCodeUnauthorized.Int()}
 }
 
 // IsUnauthorized is unauthorized
