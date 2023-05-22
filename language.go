@@ -31,8 +31,10 @@ type TransInfo struct {
 
 var messageMap = map[string]map[LangType]TransInfo{}
 
-func RegisterI18n(messages []TransInfo) {
+func init() {
 	messageMap = map[string]map[LangType]TransInfo{}
+}
+func RegisterI18n(messages []TransInfo) {
 	for _, msg := range messages {
 		lang := ConvertLang(msg.Lang.String())
 		if msgMap, ok := messageMap[msg.Key]; ok {
