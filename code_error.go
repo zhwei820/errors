@@ -29,7 +29,7 @@ func (c ErrCode) Int() uint32 {
 	return uint32(c)
 }
 
-func init() {
+func InitI18n() {
 	RegisterI18n([]TransInfo{
 		{
 			Lang: EnUs,

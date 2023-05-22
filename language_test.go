@@ -30,6 +30,7 @@ func TestRegisterI18n(t *testing.T) {
 	}
 	RegisterI18n(messages)
 
+	fmt.Println(TranslateWithConvertLan("en", "12000003"))
 	fmt.Println(TranslateWithConvertLan("en", "100000101"))
 	fmt.Println(TranslateWithConvertLan("zh", "100000101"))
 	fmt.Println(TranslateWithConvertLan("ru", "100000101"))
