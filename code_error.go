@@ -198,12 +198,12 @@ func IsNotValid(err error) bool {
 
 // NotFoundf returns an error which satisfies IsNotFound().
 func NotFoundf(format string, args ...interface{}) error {
-	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusNotFound), args...), Code: codes.NotFound, HTTPCode: http.StatusNotFound, BizCode: ErrCodeBadRequest.Int()}
+	return &CodeError{Err: wrap(nil, format, " "+http.StatusText(http.StatusNotFound), args...), Code: codes.NotFound, HTTPCode: http.StatusNotFound, BizCode: ErrCodeNotFound.Int()}
 }
 
 // NewNotFound returns an error which wraps err that satisfies
 func NewNotFound(err error, msg string) error {
-	return &CodeError{Err: wrap(err, msg, ""), Code: codes.NotFound, HTTPCode: http.StatusNotFound, BizCode: ErrCodeBadRequest.Int()}
+	return &CodeError{Err: wrap(err, msg, ""), Code: codes.NotFound, HTTPCode: http.StatusNotFound, BizCode: ErrCodeNotFound.Int()}
 }
 
 // IsNotFound is not Fund
