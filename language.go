@@ -1,7 +1,6 @@
 package errors
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -45,7 +44,7 @@ func RegisterI18n(messages []TransInfo) {
 			messageMap[msg.Key] = map[LangType]TransInfo{lang: msg}
 		}
 	}
-	fmt.Println(fmt.Sprintf("messageMap: %v", messageMap))
+	// fmt.Println(fmt.Sprintf("messageMap: %v", messageMap))
 }
 
 func Translate(langSpec LangType, key string) string {
